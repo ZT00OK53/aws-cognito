@@ -83,10 +83,11 @@ class CognitoTokenGuard extends TokenGuard
      * @return bool
      * @throws InvalidUserModelException
      */
-    protected function hasValidCredentials($user, $credentials)
+    protected function hasValidCredentials($user, $credentials, $DecryptedEmail)
     {
         /** @var Result $response */
-        $result = $this->client->authenticate($credentials[$this->keyUsername], $credentials['password']);
+        // $result = $this->client->authenticate($credentials[$this->keyUsername], $credentials['password']);
+        $result = $this->client->authenticate($DecryptedEmail, $credentials['password']);
        
         if (!empty($result) && $result instanceof AwsResult) {
 
@@ -97,16 +98,19 @@ class CognitoTokenGuard extends TokenGuard
                 if (config('cognito.force_password_change_api')) {
                     $this->claim = [
                         'session_token' => $result['Session'],
-                        'username' => $credentials[$this->keyUsername],
+                        // 'username' => $credentials[$this->keyUsername],
+                        'username' => $DecryptedEmail,
                         'status' => $result['ChallengeName']
                     ];
                 } else {
                     if (config('cognito.force_password_auto_update_api')) {
                         //Force set password same as authenticated with challenge state
-                        $this->client->confirmPassword($credentials[$this->keyUsername], $credentials['password'], $result['Session']);
+                        // $this->client->confirmPassword($credentials[$this->keyUsername], $credentials['password'], $result['Session']);
+                        $this->client->confirmPassword($DecryptedEmail, $credentials['password'], $result['Session']);
 
                         //Get the result object again
-                        $result = $this->client->authenticate($credentials[$this->keyUsername], $credentials['password']);
+                        // $result = $this->client->authenticate($credentials[$this->keyUsername], $credentials['password']);
+                        $result = $this->client->authenticate($DecryptedEmail, $credentials['password']);
                         if (empty($result)) {
                             return false;
                         } //End if
@@ -119,7 +123,8 @@ class CognitoTokenGuard extends TokenGuard
             //Create Claim for confirmed users
             if (!isset($result['ChallengeName'])) {
                 //Create claim token
-                $this->claim = new AwsCognitoClaim($result, $user, $credentials[$this->keyUsername]);
+                // $this->claim = new AwsCognitoClaim($result, $user, $credentials[$this->keyUsername]);
+                $this->claim = new AwsCognitoClaim($result, $user, $DecryptedEmail);
             } //End if     
 
             return ($this->claim)?true:false;
@@ -139,7 +144,7 @@ class CognitoTokenGuard extends TokenGuard
      * @throws
      * @return bool
      */
-    public function attempt(array $credentials = [], $remember = false)
+    public function attempt(array $credentials = [], $remember = false, $DecryptedEmail)
     {
         try {
             $this->lastAttempted = $user = $this->provider->retrieveByCredentials($credentials);
@@ -149,7 +154,7 @@ class CognitoTokenGuard extends TokenGuard
                 throw new NoLocalUserException();
             } //End if
 
-            if ($this->hasValidCredentials($user, $credentials)) {
+            if ($this->hasValidCredentials($user, $credentials, $DecryptedEmail)) {
                 return $this->login($user);
             } //End if
 
@@ -266,19 +271,19 @@ class CognitoTokenGuard extends TokenGuard
 
         //Check if the user exists
         if (!is_null($this->user)) {
-			return $this->user;
-		} //End if
+            return $this->user;
+        } //End if
 
         //Retrieve token from request and authenticate
-		return $this->getTokenForRequest();
+        return $this->getTokenForRequest();
     } //Function ends
 
 
     /**
-	 * Get the token for the current request.
-	 * @return string
-	 */
-	public function getTokenForRequest () {
+     * Get the token for the current request.
+     * @return string
+     */
+    public function getTokenForRequest () {
         //Check for request having token
         if (! $this->cognito->parser()->setRequest($this->request)->hasToken()) {
             return null;
@@ -296,6 +301,6 @@ class CognitoTokenGuard extends TokenGuard
 
         //Get user and return
         return $this->user = $this->provider->retrieveById($claim['sub']);
-	} //Function ends
+    } //Function ends
 
 } //Class ends

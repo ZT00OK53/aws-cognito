@@ -31,7 +31,7 @@ trait AuthenticatesUsers
      * 
      * @return mixed
      */
-    protected function attemptLogin(Collection $request, string $guard='web', string $paramUsername='email', string $paramPassword='password', bool $isJsonResponse=false)
+    protected function attemptLogin(Collection $request, string $guard='web', string $paramUsername='email', string $paramPassword='password', bool $isJsonResponse=false, $DecryptedEmail)
     {
         try {
             //Get key fields
@@ -42,11 +42,11 @@ trait AuthenticatesUsers
             //Generate credentials array
             $credentials = [
                 $keyUsername => $request[$paramUsername], 
-                $keyPassword => $request[$paramPassword]
+                $keyPassword => $request[$paramPassword],
             ];
 
             //Authenticate User
-            $claim = Auth::guard($guard)->attempt($credentials, $rememberMe);
+            $claim = Auth::guard($guard)->attempt($credentials, $rememberMe, $DecryptedEmail);
 
         } catch (NoLocalUserException $e) {
             Log::error('AuthenticatesUsers:attemptLogin:NoLocalUserException');
