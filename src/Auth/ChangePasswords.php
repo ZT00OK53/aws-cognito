@@ -70,7 +70,7 @@ trait ChangePasswords
     /**
      * If a user is being forced to set a new password for the first time follow that flow instead.
      *
-     * @param  \Ellaisys\Cognito\AwsCognitoClient  $client
+     * @param  \Zt\Cognito\AwsCognitoClient  $client
      * @param  \Illuminate\Support\Collection  $request
      * @param  string  $paramUsername
      * @param  string  $passwordOld
@@ -91,7 +91,7 @@ trait ChangePasswords
     /**
      * If a user is being forced to set a new password for the first time follow that flow instead.
      *
-     * @param  \Ellaisys\Cognito\AwsCognitoClient  $client
+     * @param  \Zt\Cognito\AwsCognitoClient  $client
      * @param  \Illuminate\Support\Collection  $request
      * @param  string  $paramUsername
      * @param  string  $passwordOld
