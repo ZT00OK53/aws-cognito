@@ -28,7 +28,7 @@ We decided to use it and contribute it to the community as a package, that encou
 You can install the package via composer.
 
 ```bash
-composer require zt/aws-cognito
+composer require ztcognito/aws-cognito
 ```
 
 #### Laravel 5.4 and before
